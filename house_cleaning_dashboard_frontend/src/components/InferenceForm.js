@@ -215,7 +215,7 @@ function InferenceForm() {
 
         {status === 'success' && (
           <div style={{ ...alertStyle, ...successStyle }} role="status" aria-live="polite">
-            <strong style={{ color: '#2ecc71' }}>Success: </strong><span>{message}</span>
+            <strong style={{ color: '#39d98a' }}>Success: </strong><span>{message}</span>
             {typeof recommendedMinutes === 'number' && (
               <div style={resultStyle}>
                 <div style={{ fontSize: 16, color: 'var(--text-secondary)' }}>
@@ -267,7 +267,7 @@ const subtitleStyle = {
 const cardStyle = {
   background: 'var(--bg-secondary)',
   border: `1px solid var(--border-color)`,
-  borderRadius: '16px',
+  borderRadius: '1.1rem',
   padding: '1rem',
   marginTop: '0.75rem',
   boxShadow: '0 10px 24px rgba(0,0,0,0.35)',
@@ -290,10 +290,10 @@ const tabButtonStyle = {
   cursor: 'pointer',
 };
 const tabActiveStyle = {
-  backgroundColor: 'var(--red-600)',
+  background: 'linear-gradient(90deg, #FF1744 0%, #D50000 100%)',
   color: '#ffffff',
-  borderColor: 'var(--red-600)',
-  boxShadow: '0 0 0 3px var(--focus-ring)',
+  borderColor: 'transparent',
+  boxShadow: '0 0 0 3px rgba(255,23,68,0.35)',
 };
 
 const formRowStyle = {
@@ -311,27 +311,25 @@ const textareaStyle = {
   display: 'block',
   width: '100%',
   padding: '12px 14px',
-  borderRadius: '12px',
+  borderRadius: '1.1rem',
   border: `1px solid var(--border-color)`,
-  background: 'var(--black-800)',
+  background: 'var(--input-bg)',
   color: 'var(--text-primary)',
   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
   minHeight: 200,
   outline: 'none',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
 };
-
 const hintStyle = {
   marginTop: 6,
   fontSize: 12,
   color: 'var(--text-muted)',
 };
-
 const preInlineStyle = {
-  background: 'var(--black-900)',
+  background: '#121212',
   border: `1px solid var(--border-color)`,
   padding: '0.5rem',
-  borderRadius: '12px',
+  borderRadius: '1rem',
   overflowX: 'auto',
   marginTop: 6,
   color: 'var(--text-secondary)',
@@ -344,23 +342,22 @@ const buttonRowStyle = {
   marginTop: '0.5rem',
   flexWrap: 'wrap',
 };
-
 const primaryButtonStyle = {
-  backgroundColor: 'var(--red-600)',
+  background: 'linear-gradient(90deg, #FF1744 0%, #D50000 100%)',
   color: 'var(--button-text)',
   border: '1px solid transparent',
-  borderRadius: '12px',
+  borderRadius: '1.1rem',
   padding: '10px 16px',
   fontSize: 14,
   fontWeight: 800,
   cursor: 'pointer',
-  boxShadow: '0 10px 24px rgba(217,4,41,0.35)',
+  boxShadow: '0 10px 24px rgba(213,0,0,0.35)',
 };
 const secondaryButtonStyle = {
   backgroundColor: 'transparent',
   color: 'var(--text-primary)',
   border: `1px solid var(--border-color)`,
-  borderRadius: '12px',
+  borderRadius: '1.1rem',
   padding: '10px 16px',
   fontSize: 14,
   fontWeight: 800,
@@ -370,18 +367,17 @@ const secondaryButtonStyle = {
 const alertStyle = {
   marginTop: '1rem',
   padding: '0.85rem 1rem',
-  borderRadius: '12px',
+  borderRadius: '1.1rem',
   border: '1px solid transparent',
-  background: 'var(--black-800)',
+  background: '#121212',
 };
-
 const successStyle = {
   background: 'linear-gradient(180deg, rgba(46,204,113,0.12), rgba(46,204,113,0.06))',
-  borderColor: 'rgba(46,204,113,0.45)',
+  borderColor: 'rgba(46,204,113,0.35)',
 };
 const errorStyle = {
-  background: 'linear-gradient(180deg, rgba(217,4,41,0.17), rgba(239,35,60,0.08))',
-  borderColor: 'rgba(217,4,41,0.55)',
+  background: 'linear-gradient(180deg, rgba(213,0,0,0.20), rgba(255,23,68,0.12))',
+  borderColor: 'rgba(213,0,0,0.55)',
 };
 
 const resultStyle = {

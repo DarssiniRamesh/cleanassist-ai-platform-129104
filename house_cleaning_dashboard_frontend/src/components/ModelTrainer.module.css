@@ -1,24 +1,19 @@
 :root {
-  /* Black + Red palette */
-  --black-900: #0b0b0b;
-  --black-800: #121212;
-  --gray-700: #1e1e1e;
-  --gray-650: #232323;
-  --gray-600: #2a2a2a;
-  --gray-500: #3a3a3a;
+  /* Unified Black + Red Spec */
+  --bg-primary: #111;
+  --bg-secondary: #18181b;
+  --text-primary: #FFF;
+  --text-secondary: #d1d1d1;
+  --text-muted: #b3b3b3;
 
-  --red-500: #ef233c;
-  --red-600: #d90429;
-  --red-700: #aa031f;
+  --primary-red: #FF1744;
+  --accent-red: #D50000;
 
-  --success-500: #2ecc71;
-
-  /* Theme vars */
-  --bg-primary: var(--black-900);
-  --bg-secondary: var(--gray-700);
-  --text-primary: #ffffff;
-  --text-secondary: #c9c9c9;
+  --input-bg: #232323;
+  --input-border: #FF1744;
   --border-color: #2b2b2b;
+
+  --button-gradient: linear-gradient(90deg, #FF1744 0%, #D50000 100%);
 
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.45);
@@ -54,7 +49,7 @@
 .trainerCard {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 18px;
+  border-radius: 1.1rem;
   padding: 1.25rem;
   margin-top: 1rem;
   box-shadow: var(--shadow-md);
@@ -93,9 +88,9 @@
 /* Dropzone */
 .dropzone {
   border: 2px dashed var(--border-color);
-  border-radius: 16px;
+  border-radius: 1.1rem;
   padding: 1.25rem;
-  background: linear-gradient(180deg, var(--gray-650), var(--bg-secondary));
+  background: linear-gradient(180deg, #232323, var(--bg-secondary));
   transition: all 0.2s ease;
 }
 .dropInner {
@@ -118,20 +113,20 @@
   font-size: 0.9rem;
 }
 .dropzone:hover {
-  border-color: var(--red-600);
+  border-color: var(--primary-red);
   box-shadow: var(--shadow-sm);
 }
 .dragOver {
-  border-color: var(--red-600);
-  background: rgba(217, 4, 41, 0.08);
+  border-color: var(--primary-red);
+  background: rgba(255, 23, 68, 0.08);
 }
 
 /* File chip card */
 .fileCard {
   margin-top: 12px;
-  background: var(--gray-650);
+  background: #232323;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 1.1rem;
   padding: 0.65rem 0.85rem;
   display: flex;
   align-items: center;
@@ -163,17 +158,17 @@
   display: block;
   width: 100%;
   padding: 11px 12px;
-  border-radius: 12px;
+  border-radius: 1.1rem;
   border: 1px solid var(--border-color);
-  background: var(--black-800);
+  background: var(--input-bg);
   color: var(--text-primary);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.05s ease;
   outline: none;
 }
 .input:focus,
 .select:focus {
-  border-color: var(--red-600);
-  box-shadow: 0 0 0 3px rgba(217, 4, 41, 0.25);
+  border-color: var(--input-border);
+  box-shadow: 0 0 0 3px rgba(255, 23, 68, 0.25);
   transform: translateY(-1px);
 }
 .fieldHint {
@@ -194,30 +189,30 @@
   appearance: none;
   border: 1px solid transparent;
   color: #fff;
-  background: linear-gradient(135deg, var(--red-600), var(--red-500));
-  border-radius: 12px;
+  background: var(--button-gradient);
+  border-radius: 1.1rem;
   padding: 11px 18px;
   font-size: 0.95rem;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 10px 20px rgba(217, 4, 41, 0.35);
+  box-shadow: 0 10px 20px rgba(213, 0, 0, 0.35);
   transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
 }
 .btnPrimary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(217, 4, 41, 0.45);
+  box-shadow: 0 14px 28px rgba(213, 0, 0, 0.45);
   filter: brightness(1.05);
 }
 .btnPrimary:active {
   transform: translateY(0);
-  background: var(--red-700);
+  background: var(--accent-red);
 }
 .btnSecondary {
   appearance: none;
   background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 1.1rem;
   padding: 11px 16px;
   font-size: 0.95rem;
   font-weight: 800;
@@ -234,22 +229,22 @@
   background: transparent;
   color: var(--text-secondary);
   border: 1px dashed var(--border-color);
-  border-radius: 12px;
+  border-radius: 1.1rem;
   padding: 11px 14px;
   font-size: 0.9rem;
   font-weight: 800;
   transition: border-color 0.2s ease, transform 0.1s ease, color 0.2s ease;
 }
 .btnLink:hover {
-  color: var(--red-500);
+  color: var(--primary-red);
   transform: translateY(-1px);
-  border-color: var(--red-600);
+  border-color: var(--accent-red);
 }
 .btnGhost {
   background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: 1.1rem;
   padding: 8px 12px;
   font-size: 0.95rem;
   font-weight: 800;
@@ -258,9 +253,9 @@
 }
 .btnGhost:hover {
   transform: translateY(-1px);
-  border-color: var(--red-600);
-  color: var(--red-500);
-  background: rgba(217, 4, 41, 0.07);
+  border-color: var(--accent-red);
+  color: var(--primary-red);
+  background: rgba(255, 23, 68, 0.07);
 }
 .chip {
   background: transparent;
@@ -300,9 +295,9 @@
 }
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--red-600), var(--red-500));
+  background: var(--button-gradient);
   transition: width 0.45s ease;
-  box-shadow: 0 6px 16px rgba(217,4,41,0.35);
+  box-shadow: 0 6px 16px rgba(213,0,0,0.35);
 }
 .progressText {
   margin-top: 8px;
@@ -314,17 +309,18 @@
 .alert {
   margin-top: 1rem;
   padding: 0.95rem 1.05rem;
-  border-radius: 12px;
+  border-radius: 1.1rem;
   border: 1px solid transparent;
   box-shadow: var(--shadow-sm);
 }
 .success {
-  background: linear-gradient(180deg, rgba(46,204,113,0.14), rgba(46,204,113,0.08));
-  border-color: rgba(46,204,113,0.45);
+  /* keep success semantics but fit into dark theme */
+  background: linear-gradient(180deg, rgba(46,204,113,0.12), rgba(46,204,113,0.06));
+  border-color: rgba(46,204,113,0.35);
 }
 .error {
-  background: linear-gradient(180deg, rgba(217,4,41,0.18), rgba(239,35,60,0.1));
-  border-color: rgba(217,4,41,0.55);
+  background: linear-gradient(180deg, rgba(213,0,0,0.20), rgba(255,23,68,0.12));
+  border-color: rgba(213,0,0,0.55);
 }
 .alertContent {
   display: flex;
@@ -340,10 +336,10 @@
   margin-top: 8px;
 }
 .pre {
-  background: var(--black-800);
+  background: #121212;
   border: 1px solid var(--border-color);
   padding: 0.8rem;
-  border-radius: 10px;
+  border-radius: 1rem;
   overflow-x: auto;
   color: var(--text-secondary);
 }
@@ -353,7 +349,7 @@
   margin-top: 1rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 1.1rem;
   padding: 0.95rem 1.05rem;
   box-shadow: var(--shadow-sm);
 }
