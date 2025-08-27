@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
+import styles from './ModelTrainer.module.css';
 
 /**
  * PUBLIC_INTERFACE
@@ -23,6 +24,7 @@ function ModelTrainer() {
 
   const dropRef = useRef(null);
   const inputRef = useRef(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const isValidFile = useCallback((f) => {
     if (!f) return false;
@@ -56,7 +58,7 @@ function ModelTrainer() {
   const onDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    e.currentTarget?.classList?.remove('drag-over');
+    setIsDragOver(false);
     const f = e.dataTransfer?.files?.[0];
     if (f) attachFile(f);
   };
@@ -64,13 +66,13 @@ function ModelTrainer() {
   const onDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    e.currentTarget?.classList?.add('drag-over');
+    setIsDragOver(true);
   };
 
   const onDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    e.currentTarget?.classList?.remove('drag-over');
+    setIsDragOver(false);
   };
 
   // PUBLIC_INTERFACE
@@ -154,26 +156,28 @@ function ModelTrainer() {
   }[status] || '📄';
 
   return (
-    <div style={containerStyle}>
-      <h2 style={titleStyle}>Train Your Cleaning Model</h2>
-      <p style={subtitleStyle}>
-        Upload a dataset (.csv, .xlsx, .xls). Optionally set a target column and task type.
-        The backend will handle preprocessing and training.
-      </p>
+    <div className={styles.wrapper}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Train Your Cleaning Model</h2>
+        <p className={styles.subtitle}>
+          Upload a dataset (.csv, .xlsx, .xls). Optionally set a target column and task type.
+          The backend will handle preprocessing and training.
+        </p>
+      </div>
 
-      <div style={cardStyle}>
+      <div className={styles.trainerCard}>
         {/* Status header */}
-        <div style={statusHeader}>
-          <span aria-hidden="true" style={statusIconStyle}>{statusIcon}</span>
+        <div className={styles.statusHeader}>
+          <span aria-hidden="true" className={styles.statusIcon}>{statusIcon}</span>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={statusTitle}>
+            <div className={styles.statusTitle}>
               {status === 'ready' && 'Ready to upload'}
               {status === 'uploading' && 'Uploading dataset'}
               {status === 'training' && 'Training in progress'}
               {status === 'success' && 'Training complete'}
               {status === 'error' && 'Something went wrong'}
             </div>
-            <div style={statusSubTitle}>
+            <div className={styles.statusSubTitle}>
               {status === 'ready' && 'Drag & drop your file here or click Browse below.'}
               {status === 'uploading' && 'Hold tight while we send your file to the server.'}
               {status === 'training' && 'We are building your model. This may take a moment.'}
@@ -189,16 +193,14 @@ function ModelTrainer() {
           onDrop={onDrop}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
-          style={{
-            ...dropZoneStyle,
-            ...(isBusy ? { opacity: 0.6, pointerEvents: 'none' } : {}),
-          }}
+          className={`${styles.dropzone} ${isDragOver ? styles.dragOver : ''}`}
+          style={isBusy ? { opacity: 0.6, pointerEvents: 'none' } : undefined}
           aria-label="Dataset upload area"
         >
-          <div style={dropZoneInner}>
-            <div style={dropIcon}>📦</div>
-            <div style={dropTitle}>Drag & drop your dataset</div>
-            <div style={dropHint}>
+          <div className={styles.dropInner}>
+            <div className={styles.dropIcon}>📦</div>
+            <div className={styles.dropTitle}>Drag & drop your dataset</div>
+            <div className={styles.dropHint}>
               CSV or Excel files only (.csv, .xlsx, .xls).
             </div>
             <div style={{ marginTop: 10 }}>
@@ -206,7 +208,7 @@ function ModelTrainer() {
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 disabled={isBusy}
-                style={ghostButtonStyle}
+                className={styles.btnGhost}
                 aria-label="Browse files to upload dataset"
               >
                 Browse files
@@ -225,7 +227,7 @@ function ModelTrainer() {
 
         {/* Selected file preview */}
         {file && (
-          <div style={fileCard} aria-live="polite">
+          <div className={styles.fileCard} aria-live="polite">
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span aria-hidden="true">🗂️</span>
               <div style={{ fontWeight: 600 }}>{file.name}</div>
@@ -233,7 +235,7 @@ function ModelTrainer() {
             <button
               onClick={() => setFile(null)}
               disabled={isBusy}
-              style={chipButton}
+              className={styles.chip}
               aria-label="Remove selected file"
             >
               Remove
@@ -242,9 +244,9 @@ function ModelTrainer() {
         )}
 
         {/* Extra options */}
-        <div style={gridRow}>
-          <div style={gridCol}>
-            <label htmlFor="targetColumn" style={labelStyle}>Target column (optional)</label>
+        <div className={styles.grid}>
+          <div>
+            <label htmlFor="targetColumn" className={styles.label}>Target column (optional)</label>
             <input
               id="targetColumn"
               type="text"
@@ -252,37 +254,38 @@ function ModelTrainer() {
               value={targetColumn}
               onChange={(e) => setTargetColumn(e.target.value)}
               disabled={isBusy}
-              style={textInputStyle}
+              className={styles.input}
             />
-            <div style={fieldHint}>
+            <div className={styles.fieldHint}>
               If left blank, the server may use the last column in your data.
             </div>
           </div>
-          <div style={gridCol}>
-            <label htmlFor="taskType" style={labelStyle}>Task type (optional)</label>
+          <div>
+            <label htmlFor="taskType" className={styles.label}>Task type (optional)</label>
             <select
               id="taskType"
               value={taskType}
               onChange={(e) => setTaskType(e.target.value)}
               disabled={isBusy}
-              style={selectStyle}
+              className={styles.select}
             >
               <option value="">Auto detect</option>
               <option value="classification">Classification</option>
               <option value="regression">Regression</option>
             </select>
-            <div style={fieldHint}>
+            <div className={styles.fieldHint}>
               Choose manually or let the backend infer from your target values.
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div style={buttonRowStyle}>
+        <div className={styles.actions}>
           <button
             onClick={startTraining}
             disabled={!file || isBusy}
-            style={{ ...primaryButtonStyle, opacity: (!file || isBusy) ? 0.7 : 1 }}
+            className={styles.btnPrimary}
+            style={{ opacity: (!file || isBusy) ? 0.7 : 1 }}
             aria-label="Start model training"
           >
             {isBusy ? 'Processing...' : 'Start Training'}
@@ -290,7 +293,7 @@ function ModelTrainer() {
           <button
             onClick={reset}
             disabled={isBusy && status !== 'error'}
-            style={secondaryButtonStyle}
+            className={styles.btnSecondary}
             aria-label="Reset training form"
           >
             Reset
@@ -298,7 +301,7 @@ function ModelTrainer() {
           <a
             href="/static/sample_dataset.csv"
             download
-            style={linkLikeButton}
+            className={styles.btnLink}
             aria-label="Download sample dataset template CSV"
           >
             ⬇️ Sample CSV
@@ -307,15 +310,15 @@ function ModelTrainer() {
 
         {/* Progress */}
         {(status === 'uploading' || status === 'training') && (
-          <div style={progressWrapperStyle} aria-live="polite">
-            <div style={progressLabelRow}>
-              <span style={{ fontWeight: 600 }}>{status === 'uploading' ? 'Uploading' : 'Training'}</span>
+          <div className={styles.progress} aria-live="polite">
+            <div className={styles.progressHeader}>
+              <span style={{ fontWeight: 700 }}>{status === 'uploading' ? 'Uploading' : 'Training'}</span>
               <span>{progress}%</span>
             </div>
-            <div style={progressBarTrackStyle}>
-              <div style={{ ...progressBarFillStyle, width: `${progress}%` }} />
+            <div className={styles.progressTrack}>
+              <div className={styles.progressFill} style={{ width: `${progress}%` }} />
             </div>
-            <div style={progressTextStyle}>
+            <div className={styles.progressText}>
               {status === 'uploading' ? 'Uploading dataset...' : 'Training in progress...'}
             </div>
           </div>
@@ -323,24 +326,24 @@ function ModelTrainer() {
 
         {/* Success */}
         {status === 'success' && (
-          <div style={{ ...alertStyle, ...successStyle }} role="status" aria-live="polite">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className={`${styles.alert} ${styles.success}`} role="status" aria-live="polite">
+            <div className={styles.alertContent}>
               <span aria-hidden="true">🎉</span>
               <div>
-                <div style={{ fontWeight: 700 }}>Success</div>
+                <div style={{ fontWeight: 800 }}>Success</div>
                 <div>{message}</div>
               </div>
             </div>
             {result && (
-              <div style={resultStyle}>
+              <div className={styles.result}>
                 <div><strong>Model ID:</strong> {result.model_id || 'N/A'}</div>
                 <div><strong>Task Type:</strong> {result.task_type || 'N/A'}</div>
                 <div><strong>Target Column:</strong> {result.target_column || 'N/A'}</div>
                 <div><strong>Artifact Path:</strong> {result.model_path || 'N/A'}</div>
                 {result.metrics && (
-                  <details style={detailsStyle}>
+                  <details className={styles.details}>
                     <summary>Metrics</summary>
-                    <pre style={preStyle}>{JSON.stringify(result.metrics, null, 2)}</pre>
+                    <pre className={styles.pre}>{JSON.stringify(result.metrics, null, 2)}</pre>
                   </details>
                 )}
               </div>
@@ -350,15 +353,15 @@ function ModelTrainer() {
 
         {/* Error */}
         {status === 'error' && (
-          <div style={{ ...alertStyle, ...errorStyle }} role="alert" aria-live="assertive">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className={`${styles.alert} ${styles.error}`} role="alert" aria-live="assertive">
+            <div className={styles.alertContent}>
               <span aria-hidden="true">⚠️</span>
               <div>
-                <div style={{ fontWeight: 700 }}>Error</div>
+                <div style={{ fontWeight: 800 }}>Error</div>
                 <div>{message || 'An error occurred. Please check your file and try again.'}</div>
               </div>
             </div>
-            <div style={helperBlockStyle}>
+            <div className={styles.result}>
               • Ensure your file is a CSV or Excel (.csv, .xlsx, .xls).<br />
               • Verify the header row and that the target column exists (if specified).<br />
               • Try the sample CSV to validate the flow.
@@ -368,9 +371,9 @@ function ModelTrainer() {
       </div>
 
       {/* Contextual tips */}
-      <div style={tipsCard}>
-        <div style={{ fontWeight: 700, marginBottom: 8 }}>Tips</div>
-        <ul style={tipsList}>
+      <div className={styles.panel}>
+        <div className={styles.panelTitle}>Tips</div>
+        <ul className={styles.tips}>
           <li>Use clear column names; avoid spaces or special characters if possible.</li>
           <li>Target column is usually your outcome variable (e.g., duration_minutes).</li>
           <li>For classification, target values should be discrete categories.</li>
@@ -380,288 +383,5 @@ function ModelTrainer() {
     </div>
   );
 }
-
-/* Styles: modern spacing, clean colors, and expressive elements */
-const containerStyle = {
-  maxWidth: 920,
-  margin: '2rem auto',
-  padding: '0 1rem',
-  textAlign: 'left',
-};
-
-const titleStyle = {
-  margin: 0,
-  fontSize: '1.9rem',
-  letterSpacing: 0.2,
-};
-
-const subtitleStyle = {
-  marginTop: '0.35rem',
-  color: 'var(--text-secondary)',
-  fontSize: 14,
-};
-
-const cardStyle = {
-  background: 'var(--bg-secondary)',
-  border: `1px solid var(--border-color)`,
-  borderRadius: 14,
-  padding: '1.1rem',
-  marginTop: '1rem',
-};
-
-const statusHeader = {
-  display: 'flex',
-  gap: 12,
-  alignItems: 'flex-start',
-  padding: '0.5rem 0 0.75rem 0',
-  borderBottom: `1px dashed var(--border-color)`,
-  marginBottom: '0.75rem',
-};
-
-const statusIconStyle = {
-  fontSize: 24,
-  lineHeight: '24px',
-};
-
-const statusTitle = {
-  fontWeight: 700,
-  fontSize: 16,
-};
-
-const statusSubTitle = {
-  color: 'var(--text-secondary)',
-  fontSize: 13,
-  marginTop: 2,
-};
-
-const dropZoneStyle = {
-  border: `2px dashed var(--border-color)`,
-  borderRadius: 12,
-  padding: '1rem',
-  background: 'var(--bg-primary)',
-  transition: 'all 0.2s ease',
-};
-
-const dropZoneInner = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  textAlign: 'center',
-};
-
-const dropIcon = {
-  fontSize: 30,
-};
-
-const dropTitle = {
-  marginTop: 6,
-  fontWeight: 700,
-};
-
-const dropHint = {
-  marginTop: 4,
-  color: 'var(--text-secondary)',
-  fontSize: 13,
-};
-
-const ghostButtonStyle = {
-  background: 'transparent',
-  color: 'var(--text-primary)',
-  border: `1px solid var(--border-color)`,
-  borderRadius: 8,
-  padding: '8px 12px',
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: 'pointer',
-};
-
-const fileCard = {
-  marginTop: 10,
-  background: 'var(--bg-primary)',
-  border: `1px solid var(--border-color)`,
-  borderRadius: 10,
-  padding: '0.6rem 0.8rem',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 10,
-};
-
-const chipButton = {
-  background: 'transparent',
-  color: 'var(--text-primary)',
-  border: `1px solid var(--border-color)`,
-  borderRadius: 9999,
-  padding: '6px 10px',
-  fontSize: 12,
-  fontWeight: 600,
-  cursor: 'pointer',
-};
-
-const gridRow = {
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: 12,
-  marginTop: 12,
-};
-
-const gridCol = {
-  display: 'flex',
-  flexDirection: 'column',
-};
-
-const labelStyle = {
-  display: 'block',
-  marginBottom: 8,
-  fontWeight: 600,
-};
-
-const textInputStyle = {
-  display: 'block',
-  width: '100%',
-  padding: '10px 12px',
-  borderRadius: 8,
-  border: `1px solid var(--border-color)`,
-  background: 'var(--bg-primary)',
-  color: 'var(--text-primary)',
-};
-
-const selectStyle = {
-  ...textInputStyle,
-  cursor: 'pointer',
-};
-
-const fieldHint = {
-  marginTop: 6,
-  fontSize: 12,
-  color: 'var(--text-secondary)',
-};
-
-const buttonRowStyle = {
-  display: 'flex',
-  gap: '0.75rem',
-  alignItems: 'center',
-  marginTop: '0.5rem',
-  flexWrap: 'wrap',
-};
-
-const primaryButtonStyle = {
-  backgroundColor: 'var(--button-bg)',
-  color: 'var(--button-text)',
-  border: 'none',
-  borderRadius: 8,
-  padding: '10px 16px',
-  fontSize: 14,
-  fontWeight: 700,
-  cursor: 'pointer',
-};
-
-const secondaryButtonStyle = {
-  backgroundColor: 'transparent',
-  color: 'var(--text-primary)',
-  border: `1px solid var(--border-color)`,
-  borderRadius: 8,
-  padding: '10px 16px',
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: 'pointer',
-};
-
-const linkLikeButton = {
-  backgroundColor: 'transparent',
-  color: 'var(--text-secondary)',
-  border: `1px dashed var(--border-color)`,
-  borderRadius: 8,
-  padding: '10px 12px',
-  fontSize: 13,
-  fontWeight: 600,
-  textDecoration: 'none',
-};
-
-const progressWrapperStyle = {
-  marginTop: '1rem',
-};
-
-const progressLabelRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  fontSize: 13,
-  marginBottom: 6,
-};
-
-const progressBarTrackStyle = {
-  width: '100%',
-  height: 10,
-  background: 'var(--border-color)',
-  borderRadius: 8,
-  overflow: 'hidden',
-};
-
-const progressBarFillStyle = {
-  height: '100%',
-  background: 'linear-gradient(90deg, var(--button-bg), #28a745)',
-  transition: 'width 0.4s ease',
-};
-
-const progressTextStyle = {
-  marginTop: 8,
-  fontSize: 13,
-  color: 'var(--text-secondary)',
-};
-
-const alertStyle = {
-  marginTop: '1rem',
-  padding: '0.9rem 1rem',
-  borderRadius: 10,
-  border: '1px solid transparent',
-};
-
-const successStyle = {
-  background: 'rgba(40, 167, 69, 0.08)',
-  borderColor: 'rgba(40, 167, 69, 0.3)',
-};
-
-const errorStyle = {
-  background: 'rgba(220, 53, 69, 0.08)',
-  borderColor: 'rgba(220, 53, 69, 0.3)',
-};
-
-const resultStyle = {
-  marginTop: 10,
-  lineHeight: 1.6,
-};
-
-const detailsStyle = {
-  marginTop: 8,
-};
-
-const preStyle = {
-  background: 'var(--bg-primary)',
-  border: `1px solid var(--border-color)`,
-  padding: '0.75rem',
-  borderRadius: 8,
-  overflowX: 'auto',
-};
-
-const helperBlockStyle = {
-  marginTop: 8,
-  fontSize: 13,
-  color: 'var(--text-primary)',
-};
-
-const tipsCard = {
-  marginTop: '1rem',
-  background: 'var(--bg-secondary)',
-  border: `1px solid var(--border-color)`,
-  borderRadius: 12,
-  padding: '0.9rem 1rem',
-};
-
-const tipsList = {
-  margin: 0,
-  paddingLeft: '1rem',
-  lineHeight: 1.6,
-  fontSize: 14,
-};
 
 export default ModelTrainer;
