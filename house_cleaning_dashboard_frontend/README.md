@@ -8,6 +8,7 @@ This project provides a minimal React template with a clean, modern UI and minim
 - **Modern UI**: Clean, responsive design with KAVIA brand styling
 - **Fast**: Minimal dependencies for quick loading times
 - **Simple**: Easy to understand and modify
+- **AI Training**: Upload a CSV/Excel file and train a model via the backend `/ai/train` endpoint
 
 ## Getting Started
 
@@ -27,21 +28,31 @@ Launches the test runner in interactive watch mode.
 Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
+## Configuration
+
+The frontend can call the backend API on the same origin by default.
+To point to a different backend host (e.g., localhost:8000), set the following environment variable:
+
+- REACT_APP_API_BASE_URL (see `.env.example`)
+
+Example:
+```
+REACT_APP_API_BASE_URL=http://localhost:8000
+```
+
+## AI Training Feature
+
+- Go to the main dashboard.
+- Use the "Train Your Cleaning Model" section to upload a `.csv`, `.xlsx`, or `.xls` file.
+- Optionally provide `target_column` and `task_type` (`classification` or `regression`), otherwise the backend will infer or default.
+- Click "Start Training" to upload and start training.
+- You will see progress and a success or error message. On success, details (model_id, task_type, target_column, model_path, metrics) are displayed.
+
 ## Customization
 
 ### Colors
 
-The main brand colors are defined as CSS variables in `src/App.css`:
-
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
-```
+The main brand colors are defined as CSS variables in `src/App.css`.
 
 ### Components
 
@@ -56,27 +67,3 @@ Common components include:
 ## Learn More
 
 To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

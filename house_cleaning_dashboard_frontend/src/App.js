@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import ModelTrainer from './components/ModelTrainer';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -16,6 +17,8 @@ function App() {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
 
+  const apiBaseUrl = useMemo(() => process.env.REACT_APP_API_BASE_URL || '', []);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -28,20 +31,16 @@ function App() {
         </button>
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
           Current theme: <strong>{theme}</strong>
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <p className="App-link" style={{ marginTop: 0, fontSize: 14 }}>
+          API Base: {apiBaseUrl || 'Same Origin'}
+        </p>
       </header>
+
+      <main style={{ paddingBottom: '3rem' }}>
+        <ModelTrainer />
+      </main>
     </div>
   );
 }
