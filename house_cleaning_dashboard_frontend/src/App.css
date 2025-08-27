@@ -1,0 +1,136 @@
+/* Global Black + Red Theme (Accessible, unified) */
+:root {
+  /* Theme Spec */
+  --bg-primary: #111;               /* background */
+  --bg-secondary: #18181b;          /* card background */
+  --surface: #18181b;
+
+  --text-primary: #FFF;             /* pure white text */
+  --text-secondary: #d1d1d1;
+  --text-muted: #b3b3b3;
+
+  --primary-red: #FF1744;           /* main red */
+  --accent-red: #D50000;            /* deeper accent red */
+
+  --button-gradient: linear-gradient(90deg, #FF1744 0%, #D50000 100%);
+  --input-bg: #232323;              /* input background */
+  --input-border: #FF1744;          /* input border */
+  --border-color: #2b2b2b;
+
+  --button-text: #FFF;
+
+  --focus-ring: rgba(255, 23, 68, 0.35);
+
+  --radius-sm: 10px;
+  --radius-md: 1.1rem;              /* per spec */
+  --radius-lg: 1.1rem;              /* rounded modern cards */
+
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.35);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.45);
+}
+
+/* App layout */
+.App {
+  text-align: center;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Reduce/Remove default spinning logo, but preserve asset if used */
+.App-logo {
+  height: 28vmin;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.55));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 24s linear;
+  }
+}
+
+.App-header {
+  background: radial-gradient(1200px 600px at 50% -100px, rgba(255,23,68,0.16), transparent 60%), var(--bg-primary);
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: var(--text-primary);
+  position: relative;
+  padding: 3rem 1rem 1rem 1rem;
+}
+
+.App-link {
+  color: var(--primary-red);
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+  text-decoration: none;
+}
+.App-link:hover {
+  color: #ff556f;
+  text-shadow: 0 0 12px rgba(255, 23, 68, 0.35);
+}
+
+/* Buttons */
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--button-gradient);
+  color: var(--button-text);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.05);
+}
+.theme-toggle:active {
+  transform: translateY(0);
+  background: var(--accent-red);
+}
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* Utility containers and cards */
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+/* Typography helpers */
+.subtitle {
+  color: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .theme-toggle {
+    top: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
