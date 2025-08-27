@@ -4,7 +4,8 @@ import React, { useMemo, useState } from 'react';
  * PUBLIC_INTERFACE
  * InferenceForm
  * A UI component that lets users input test cases (as JSON records), posts them to /ai/infer,
- * and displays predicted recommendations. Provides feedback if no model is trained or on errors.
+ * and displays a minimal recommendation response: { "recommended_minutes": <number> }.
+ * Provides feedback if no model is trained or on errors.
  */
 function InferenceForm() {
   const apiBaseUrl = useMemo(() => process.env.REACT_APP_API_BASE_URL || '', []);
@@ -14,17 +15,17 @@ function InferenceForm() {
   const [batchRecords, setBatchRecords] = useState('[\n  {}\n]');
   const [status, setStatus] = useState('idle'); // idle | requesting | success | error
   const [message, setMessage] = useState('');
-  const [result, setResult] = useState(null);
+  const [recommendedMinutes, setRecommendedMinutes] = useState(null);
 
   const exampleSingle = JSON.stringify(
-    { rooms: 3, pets: 1, surface: 'hardwood', dirt_level: 'medium' },
+    { home_size_sqft: 1200, rooms: 3, pets_count: 1, clutter_level: 'medium' },
     null,
     2
   );
   const exampleBatch = JSON.stringify(
     [
-      { rooms: 2, pets: 0, surface: 'tile', dirt_level: 'low' },
-      { rooms: 4, pets: 2, surface: 'carpet', dirt_level: 'high' }
+      { home_size_sqft: 900, rooms: 2, pets_count: 0, clutter_level: 'low' },
+      { home_size_sqft: 2000, rooms: 4, pets_count: 2, clutter_level: 'high' }
     ],
     null,
     2
@@ -58,20 +59,20 @@ function InferenceForm() {
       if (!payload.records || !Array.isArray(payload.records) || payload.records.length === 0) {
         setStatus('error');
         setMessage('Please provide at least one record.');
-        setResult(null);
+        setRecommendedMinutes(null);
         return;
       }
     } catch (err) {
       setStatus('error');
       setMessage(err.message || 'Invalid input.');
-      setResult(null);
+      setRecommendedMinutes(null);
       return;
     }
 
     try {
       setStatus('requesting');
       setMessage('Running inference...');
-      setResult(null);
+      setRecommendedMinutes(null);
 
       const response = await fetch(`${apiBaseUrl}/ai/infer`, {
         method: 'POST',
@@ -89,38 +90,47 @@ function InferenceForm() {
       }
 
       if (!response.ok) {
-        // Heuristic: backend may respond 400 with detail: "No trained model found" or similar.
         const detail = data?.detail || data?.message || 'Inference failed. Ensure a model is trained.';
         setStatus('error');
         setMessage(detail);
-        setResult(null);
+        setRecommendedMinutes(null);
+        return;
+      }
+
+      // Expect minimal response: { "recommended_minutes": <number> }
+      const minutes = data?.recommended_minutes;
+      if (typeof minutes !== 'number') {
+        setStatus('error');
+        setMessage('Unexpected response from server. Missing "recommended_minutes".');
+        setRecommendedMinutes(null);
         return;
       }
 
       setStatus('success');
       setMessage('Inference completed successfully.');
-      setResult(data);
+      setRecommendedMinutes(minutes);
     } catch (err) {
       console.error(err);
       setStatus('error');
       setMessage('Unexpected error during inference. Please try again.');
-      setResult(null);
+      setRecommendedMinutes(null);
     }
   };
 
   const reset = () => {
     setStatus('idle');
     setMessage('');
-    setResult(null);
+    setRecommendedMinutes(null);
   };
 
   const isBusy = status === 'requesting';
 
   return (
     <div style={containerStyle}>
-      <h2 style={titleStyle}>Test Your Model with Cases</h2>
+      <h2 style={titleStyle}>Get Recommended Cleaning Time</h2>
       <p style={subtitleStyle}>
-        Paste one or more records as JSON. Click "Run Inference" to get recommendations/predictions from the latest trained model.
+        Paste one or more records as JSON and click "Run Inference" to get the recommended cleaning minutes
+        from the latest trained model. If multiple records are provided, the first will be used.
       </p>
 
       <div style={cardStyle}>
@@ -188,7 +198,7 @@ function InferenceForm() {
             onClick={runInference}
             disabled={isBusy}
             style={{ ...primaryButtonStyle, opacity: isBusy ? 0.7 : 1 }}
-            aria-label="Send cases to the model and get predictions"
+            aria-label="Send cases to the model and get the recommended minutes"
           >
             {isBusy ? 'Running...' : 'Run Inference'}
           </button>
@@ -206,29 +216,14 @@ function InferenceForm() {
         {status === 'success' && (
           <div style={{ ...alertStyle, ...successStyle }} role="status" aria-live="polite">
             <strong>Success: </strong>{message}
-            {result && (
+            {typeof recommendedMinutes === 'number' && (
               <div style={resultStyle}>
-                <div><strong>Model ID:</strong> {result.model_id || 'N/A'}</div>
-                <div><strong>Task Type:</strong> {result.task_type || 'N/A'}</div>
-                <div><strong>Count:</strong> {result.count ?? 'N/A'}</div>
-
-                <details style={detailsStyle} open>
-                  <summary>Predictions</summary>
-                  <pre style={preStyle}>{JSON.stringify(result.predictions, null, 2)}</pre>
-                </details>
-
-                {Array.isArray(result.probabilities) && (
-                  <details style={detailsStyle}>
-                    <summary>Probabilities</summary>
-                    <pre style={preStyle}>{JSON.stringify(result.probabilities, null, 2)}</pre>
-                  </details>
-                )}
-
-                {Array.isArray(result.classes) && (
-                  <div style={{ marginTop: 6 }}>
-                    <strong>Classes:</strong> {result.classes.join(', ')}
-                  </div>
-                )}
+                <div style={{ fontSize: 16 }}>
+                  Recommended cleaning time:
+                </div>
+                <div style={{ fontSize: 28, fontWeight: 800, marginTop: 4 }}>
+                  {recommendedMinutes} minutes
+                </div>
               </div>
             )}
           </div>
@@ -384,18 +379,6 @@ const errorStyle = {
 const resultStyle = {
   marginTop: 8,
   lineHeight: 1.6,
-};
-
-const detailsStyle = {
-  marginTop: 6,
-};
-
-const preStyle = {
-  background: 'var(--bg-primary)',
-  border: `1px solid var(--border-color)`,
-  padding: '0.75rem',
-  borderRadius: 8,
-  overflowX: 'auto',
 };
 
 const helperBlockStyle = {

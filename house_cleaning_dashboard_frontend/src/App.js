@@ -37,6 +37,10 @@ function App() {
         <p className="App-link" style={{ marginTop: 0, fontSize: 14 }}>
           API Base: {apiBaseUrl || 'Same Origin'}
         </p>
+        <p style={{ maxWidth: 720, lineHeight: 1.4, fontSize: 14, marginTop: 12 }}>
+          Tip: After training, use the form below to infer a single recommended cleaning time in minutes. 
+          The backend now returns a minimal response: {"{ \"recommended_minutes\": <number> }"}.
+        </p>
       </header>
 
       <main style={{ paddingBottom: '3rem' }}>
