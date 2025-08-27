@@ -215,13 +215,13 @@ function InferenceForm() {
 
         {status === 'success' && (
           <div style={{ ...alertStyle, ...successStyle }} role="status" aria-live="polite">
-            <strong>Success: </strong>{message}
+            <strong style={{ color: '#2ecc71' }}>Success: </strong><span>{message}</span>
             {typeof recommendedMinutes === 'number' && (
               <div style={resultStyle}>
-                <div style={{ fontSize: 16 }}>
+                <div style={{ fontSize: 16, color: 'var(--text-secondary)' }}>
                   Recommended cleaning time:
                 </div>
-                <div style={{ fontSize: 28, fontWeight: 800, marginTop: 4 }}>
+                <div style={{ fontSize: 28, fontWeight: 800, marginTop: 4, color: 'var(--text-primary)' }}>
                   {recommendedMinutes} minutes
                 </div>
               </div>
@@ -231,11 +231,11 @@ function InferenceForm() {
 
         {status === 'error' && (
           <div style={{ ...alertStyle, ...errorStyle }} role="alert" aria-live="assertive">
-            <strong>Error: </strong>{message}
+            <strong style={{ color: 'var(--button-text)' }}>Error: </strong><span>{message}</span>
             <div style={helperBlockStyle}>
-              - Ensure you have trained a model first in the "Train Your Cleaning Model" section above.<br />
-              - Check that your JSON structure matches the feature names used during training.<br />
-              - If you changed target or features, re-train the model accordingly.
+              • Ensure you have trained a model first in the "Train Your Cleaning Model" section above.<br />
+              • Check that your JSON structure matches the feature names used during training.<br />
+              • If you changed target or features, re-train the model accordingly.
             </div>
           </div>
         )}
@@ -244,17 +244,19 @@ function InferenceForm() {
   );
 }
 
-/* Inline styles consistent with template */
+/* Inline styles aligned to black/red theme */
 const containerStyle = {
   maxWidth: 840,
-  margin: '2rem auto',
+  margin: '1.25rem auto',
   padding: '0 1rem',
   textAlign: 'left',
 };
 
 const titleStyle = {
   margin: 0,
-  fontSize: '1.75rem',
+  fontSize: '1.6rem',
+  letterSpacing: 0.2,
+  color: 'var(--text-primary)',
 };
 
 const subtitleStyle = {
@@ -265,9 +267,10 @@ const subtitleStyle = {
 const cardStyle = {
   background: 'var(--bg-secondary)',
   border: `1px solid var(--border-color)`,
-  borderRadius: 12,
+  borderRadius: '16px',
   padding: '1rem',
-  marginTop: '1rem',
+  marginTop: '0.75rem',
+  boxShadow: '0 10px 24px rgba(0,0,0,0.35)',
 };
 
 const tabsRowStyle = {
@@ -280,17 +283,17 @@ const tabButtonStyle = {
   background: 'transparent',
   color: 'var(--text-primary)',
   border: `1px solid var(--border-color)`,
-  borderRadius: 8,
+  borderRadius: '999px',
   padding: '8px 12px',
   fontSize: 14,
-  fontWeight: 600,
+  fontWeight: 800,
   cursor: 'pointer',
 };
-
 const tabActiveStyle = {
-  backgroundColor: 'var(--button-bg)',
-  color: 'var(--button-text)',
-  borderColor: 'var(--button-bg)',
+  backgroundColor: 'var(--red-600)',
+  color: '#ffffff',
+  borderColor: 'var(--red-600)',
+  boxShadow: '0 0 0 3px var(--focus-ring)',
 };
 
 const formRowStyle = {
@@ -300,34 +303,38 @@ const formRowStyle = {
 const labelStyle = {
   display: 'block',
   marginBottom: 8,
-  fontWeight: 600,
+  fontWeight: 800,
+  color: 'var(--text-primary)',
 };
 
 const textareaStyle = {
   display: 'block',
   width: '100%',
-  padding: '10px 12px',
-  borderRadius: 8,
+  padding: '12px 14px',
+  borderRadius: '12px',
   border: `1px solid var(--border-color)`,
-  background: 'var(--bg-primary)',
+  background: 'var(--black-800)',
   color: 'var(--text-primary)',
-  fontFamily: 'monospace',
-  minHeight: 180,
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+  minHeight: 200,
+  outline: 'none',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
 };
 
 const hintStyle = {
   marginTop: 6,
   fontSize: 12,
-  color: 'var(--text-secondary)',
+  color: 'var(--text-muted)',
 };
 
 const preInlineStyle = {
-  background: 'var(--bg-primary)',
+  background: 'var(--black-900)',
   border: `1px solid var(--border-color)`,
   padding: '0.5rem',
-  borderRadius: 8,
+  borderRadius: '12px',
   overflowX: 'auto',
   marginTop: 6,
+  color: 'var(--text-secondary)',
 };
 
 const buttonRowStyle = {
@@ -335,45 +342,46 @@ const buttonRowStyle = {
   gap: '0.75rem',
   alignItems: 'center',
   marginTop: '0.5rem',
+  flexWrap: 'wrap',
 };
 
 const primaryButtonStyle = {
-  backgroundColor: 'var(--button-bg)',
+  backgroundColor: 'var(--red-600)',
   color: 'var(--button-text)',
-  border: 'none',
-  borderRadius: 8,
+  border: '1px solid transparent',
+  borderRadius: '12px',
   padding: '10px 16px',
   fontSize: 14,
-  fontWeight: 600,
+  fontWeight: 800,
   cursor: 'pointer',
+  boxShadow: '0 10px 24px rgba(217,4,41,0.35)',
 };
-
 const secondaryButtonStyle = {
   backgroundColor: 'transparent',
   color: 'var(--text-primary)',
   border: `1px solid var(--border-color)`,
-  borderRadius: 8,
+  borderRadius: '12px',
   padding: '10px 16px',
   fontSize: 14,
-  fontWeight: 600,
+  fontWeight: 800,
   cursor: 'pointer',
 };
 
 const alertStyle = {
   marginTop: '1rem',
-  padding: '0.75rem 1rem',
-  borderRadius: 8,
+  padding: '0.85rem 1rem',
+  borderRadius: '12px',
   border: '1px solid transparent',
+  background: 'var(--black-800)',
 };
 
 const successStyle = {
-  background: 'rgba(40, 167, 69, 0.1)',
-  borderColor: 'rgba(40, 167, 69, 0.3)',
+  background: 'linear-gradient(180deg, rgba(46,204,113,0.12), rgba(46,204,113,0.06))',
+  borderColor: 'rgba(46,204,113,0.45)',
 };
-
 const errorStyle = {
-  background: 'rgba(220, 53, 69, 0.1)',
-  borderColor: 'rgba(220, 53, 69, 0.3)',
+  background: 'linear-gradient(180deg, rgba(217,4,41,0.17), rgba(239,35,60,0.08))',
+  borderColor: 'rgba(217,4,41,0.55)',
 };
 
 const resultStyle = {
@@ -384,7 +392,7 @@ const resultStyle = {
 const helperBlockStyle = {
   marginTop: 8,
   fontSize: 13,
-  color: 'var(--text-primary)',
+  color: 'var(--text-secondary)',
 };
 
 export default InferenceForm;

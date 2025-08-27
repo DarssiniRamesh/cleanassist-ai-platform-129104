@@ -5,7 +5,7 @@ This project provides a minimal React template with a clean, modern UI and minim
 ## Features
 
 - **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
+- **Modern UI**: Clean, responsive design with a black + red dark theme
 - **Fast**: Minimal dependencies for quick loading times
 - **Simple**: Easy to understand and modify
 - **AI Training**: Upload a CSV/Excel file and train a model via the backend `/ai/train` endpoint
@@ -70,24 +70,18 @@ You can download the CSV, edit it with your own data, and re-upload it for train
 - After successfully training a model, use the "Test Your Model with Cases" section.
 - Choose Single or Batch input mode.
 - Paste a JSON object (single) or a JSON array of objects (batch) that match the feature names used for training.
-- Click "Run Inference" to receive predictions and (if classification) probabilities and classes.
-- If no model has been trained yet, the UI will display a helpful error message.
+- Click "Run Inference" to receive predictions. The backend returns `{ "recommended_minutes": <number> }`.
 
-## Customization
+## Theming
 
-### Colors
-
-The main brand colors are defined as CSS variables in `src/App.css`.
-
-### Components
-
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
-
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+- The entire app uses a modern dark theme with black surfaces, bold red accents, and high-contrast white text.
+- Theme variables live in `src/App.css` and `src/components/ModelTrainer.module.css`.
+- Key variables:
+  - Backgrounds: `--bg-primary`, `--bg-secondary`
+  - Text: `--text-primary`, `--text-secondary`
+  - Accent Red: `--red-600`, `--red-500`
+  - Borders: `--border-color`
+- Components (cards, buttons, forms, alerts) have rounded corners and accessible focus outlines.
 
 ## Learn More
 
