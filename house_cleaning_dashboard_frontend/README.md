@@ -49,6 +49,22 @@ REACT_APP_API_BASE_URL=http://localhost:8000
 - Click "Start Training" to upload and start training.
 - You will see progress and a success or error message. On success, details (model_id, task_type, target_column, model_path, metrics) are displayed.
 
+### Sample Dataset Template
+
+A ready-to-use CSV template is included to help you get started:
+
+- Download link in the UI: In the "Train Your Cleaning Model" section, click "Download sample CSV template".
+- Direct URL: `/static/sample_dataset.csv`
+
+Template columns:
+- `home_size_sqft`
+- `rooms`
+- `pets_count`
+- `clutter_level` (use values like: low, medium, high)
+- `duration_minutes` (example target variable)
+
+You can download the CSV, edit it with your own data, and re-upload it for training.
+
 ## AI Inference Feature
 
 - After successfully training a model, use the "Test Your Model with Cases" section.

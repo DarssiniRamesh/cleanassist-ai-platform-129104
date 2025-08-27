@@ -144,6 +144,17 @@ function ModelTrainer() {
             style={inputStyle}
           />
           {file && <div style={fileInfoStyle}>Selected: {file.name}</div>}
+          <div style={{ marginTop: 8, fontSize: 13 }}>
+            Need a template?{" "}
+            <a
+              href="/static/sample_dataset.csv"
+              download
+              style={{ color: "var(--text-secondary)", fontWeight: 600, textDecoration: "none" }}
+              aria-label="Download sample dataset template CSV"
+            >
+              Download sample CSV template
+            </a>
+          </div>
         </div>
 
         <div style={formRowStyle}>

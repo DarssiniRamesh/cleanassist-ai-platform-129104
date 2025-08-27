@@ -1,0 +1,6 @@
+home_size_sqft,rooms,pets_count,clutter_level,duration_minutes
+1200,3,1,medium,90
+800,2,0,low,60
+2000,5,2,high,180
+1500,4,1,medium,120
+950,3,0,low,75
