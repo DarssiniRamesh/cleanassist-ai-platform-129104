@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import ModelTrainer from './components/ModelTrainer';
+import InferenceForm from './components/InferenceForm';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -40,6 +41,7 @@ function App() {
 
       <main style={{ paddingBottom: '3rem' }}>
         <ModelTrainer />
+        <InferenceForm />
       </main>
     </div>
   );

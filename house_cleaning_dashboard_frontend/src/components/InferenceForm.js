@@ -1,0 +1,407 @@
+import React, { useMemo, useState } from 'react';
+
+/**
+ * PUBLIC_INTERFACE
+ * InferenceForm
+ * A UI component that lets users input test cases (as JSON records), posts them to /ai/infer,
+ * and displays predicted recommendations. Provides feedback if no model is trained or on errors.
+ */
+function InferenceForm() {
+  const apiBaseUrl = useMemo(() => process.env.REACT_APP_API_BASE_URL || '', []);
+
+  const [inputMode, setInputMode] = useState('single'); // 'single' | 'batch'
+  const [singleRecord, setSingleRecord] = useState('{}');
+  const [batchRecords, setBatchRecords] = useState('[\n  {}\n]');
+  const [status, setStatus] = useState('idle'); // idle | requesting | success | error
+  const [message, setMessage] = useState('');
+  const [result, setResult] = useState(null);
+
+  const exampleSingle = JSON.stringify(
+    { rooms: 3, pets: 1, surface: 'hardwood', dirt_level: 'medium' },
+    null,
+    2
+  );
+  const exampleBatch = JSON.stringify(
+    [
+      { rooms: 2, pets: 0, surface: 'tile', dirt_level: 'low' },
+      { rooms: 4, pets: 2, surface: 'carpet', dirt_level: 'high' }
+    ],
+    null,
+    2
+  );
+
+  const parsePayload = () => {
+    try {
+      if (inputMode === 'single') {
+        const obj = JSON.parse(singleRecord || '{}');
+        if (Array.isArray(obj)) {
+          return { records: obj };
+        }
+        return { records: [obj] };
+      } else {
+        const arr = JSON.parse(batchRecords || '[]');
+        if (!Array.isArray(arr)) {
+          throw new Error('Batch mode expects a JSON array of objects.');
+        }
+        return { records: arr };
+      }
+    } catch (err) {
+      throw new Error('Invalid JSON. Please fix the input JSON.');
+    }
+  };
+
+  // PUBLIC_INTERFACE
+  const runInference = async () => {
+    let payload;
+    try {
+      payload = parsePayload();
+      if (!payload.records || !Array.isArray(payload.records) || payload.records.length === 0) {
+        setStatus('error');
+        setMessage('Please provide at least one record.');
+        setResult(null);
+        return;
+      }
+    } catch (err) {
+      setStatus('error');
+      setMessage(err.message || 'Invalid input.');
+      setResult(null);
+      return;
+    }
+
+    try {
+      setStatus('requesting');
+      setMessage('Running inference...');
+      setResult(null);
+
+      const response = await fetch(`${apiBaseUrl}/ai/infer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const contentType = response.headers.get('content-type') || '';
+      let data;
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        data = { detail: text };
+      }
+
+      if (!response.ok) {
+        // Heuristic: backend may respond 400 with detail: "No trained model found" or similar.
+        const detail = data?.detail || data?.message || 'Inference failed. Ensure a model is trained.';
+        setStatus('error');
+        setMessage(detail);
+        setResult(null);
+        return;
+      }
+
+      setStatus('success');
+      setMessage('Inference completed successfully.');
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+      setStatus('error');
+      setMessage('Unexpected error during inference. Please try again.');
+      setResult(null);
+    }
+  };
+
+  const reset = () => {
+    setStatus('idle');
+    setMessage('');
+    setResult(null);
+  };
+
+  const isBusy = status === 'requesting';
+
+  return (
+    <div style={containerStyle}>
+      <h2 style={titleStyle}>Test Your Model with Cases</h2>
+      <p style={subtitleStyle}>
+        Paste one or more records as JSON. Click "Run Inference" to get recommendations/predictions from the latest trained model.
+      </p>
+
+      <div style={cardStyle}>
+        <div style={tabsRowStyle} role="tablist" aria-label="Input mode tabs">
+          <button
+            role="tab"
+            aria-selected={inputMode === 'single'}
+            onClick={() => setInputMode('single')}
+            disabled={isBusy}
+            style={{ ...tabButtonStyle, ...(inputMode === 'single' ? tabActiveStyle : {}) }}
+          >
+            Single record
+          </button>
+          <button
+            role="tab"
+            aria-selected={inputMode === 'batch'}
+            onClick={() => setInputMode('batch')}
+            disabled={isBusy}
+            style={{ ...tabButtonStyle, ...(inputMode === 'batch' ? tabActiveStyle : {}) }}
+          >
+            Batch records
+          </button>
+        </div>
+
+        <div style={formRowStyle}>
+          {inputMode === 'single' ? (
+            <>
+              <label htmlFor="singleRecord" style={labelStyle}>Record (JSON)</label>
+              <textarea
+                id="singleRecord"
+                rows={10}
+                style={textareaStyle}
+                placeholder={exampleSingle}
+                value={singleRecord}
+                onChange={(e) => setSingleRecord(e.target.value)}
+                disabled={isBusy}
+              />
+              <div style={hintStyle}>
+                Tip: Provide a JSON object. Example:
+                <pre style={preInlineStyle}>{exampleSingle}</pre>
+              </div>
+            </>
+          ) : (
+            <>
+              <label htmlFor="batchRecords" style={labelStyle}>Records (JSON Array)</label>
+              <textarea
+                id="batchRecords"
+                rows={12}
+                style={textareaStyle}
+                placeholder={exampleBatch}
+                value={batchRecords}
+                onChange={(e) => setBatchRecords(e.target.value)}
+                disabled={isBusy}
+              />
+              <div style={hintStyle}>
+                Tip: Provide a JSON array of objects. Example:
+                <pre style={preInlineStyle}>{exampleBatch}</pre>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={buttonRowStyle}>
+          <button
+            onClick={runInference}
+            disabled={isBusy}
+            style={{ ...primaryButtonStyle, opacity: isBusy ? 0.7 : 1 }}
+            aria-label="Send cases to the model and get predictions"
+          >
+            {isBusy ? 'Running...' : 'Run Inference'}
+          </button>
+
+          <button
+            onClick={reset}
+            disabled={isBusy}
+            style={secondaryButtonStyle}
+            aria-label="Reset inference form"
+          >
+            Reset
+          </button>
+        </div>
+
+        {status === 'success' && (
+          <div style={{ ...alertStyle, ...successStyle }} role="status" aria-live="polite">
+            <strong>Success: </strong>{message}
+            {result && (
+              <div style={resultStyle}>
+                <div><strong>Model ID:</strong> {result.model_id || 'N/A'}</div>
+                <div><strong>Task Type:</strong> {result.task_type || 'N/A'}</div>
+                <div><strong>Count:</strong> {result.count ?? 'N/A'}</div>
+
+                <details style={detailsStyle} open>
+                  <summary>Predictions</summary>
+                  <pre style={preStyle}>{JSON.stringify(result.predictions, null, 2)}</pre>
+                </details>
+
+                {Array.isArray(result.probabilities) && (
+                  <details style={detailsStyle}>
+                    <summary>Probabilities</summary>
+                    <pre style={preStyle}>{JSON.stringify(result.probabilities, null, 2)}</pre>
+                  </details>
+                )}
+
+                {Array.isArray(result.classes) && (
+                  <div style={{ marginTop: 6 }}>
+                    <strong>Classes:</strong> {result.classes.join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div style={{ ...alertStyle, ...errorStyle }} role="alert" aria-live="assertive">
+            <strong>Error: </strong>{message}
+            <div style={helperBlockStyle}>
+              - Ensure you have trained a model first in the "Train Your Cleaning Model" section above.<br />
+              - Check that your JSON structure matches the feature names used during training.<br />
+              - If you changed target or features, re-train the model accordingly.
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Inline styles consistent with template */
+const containerStyle = {
+  maxWidth: 840,
+  margin: '2rem auto',
+  padding: '0 1rem',
+  textAlign: 'left',
+};
+
+const titleStyle = {
+  margin: 0,
+  fontSize: '1.75rem',
+};
+
+const subtitleStyle = {
+  marginTop: '0.25rem',
+  color: 'var(--text-secondary)',
+};
+
+const cardStyle = {
+  background: 'var(--bg-secondary)',
+  border: `1px solid var(--border-color)`,
+  borderRadius: 12,
+  padding: '1rem',
+  marginTop: '1rem',
+};
+
+const tabsRowStyle = {
+  display: 'flex',
+  gap: '0.5rem',
+  marginBottom: '0.75rem',
+};
+
+const tabButtonStyle = {
+  background: 'transparent',
+  color: 'var(--text-primary)',
+  border: `1px solid var(--border-color)`,
+  borderRadius: 8,
+  padding: '8px 12px',
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: 'pointer',
+};
+
+const tabActiveStyle = {
+  backgroundColor: 'var(--button-bg)',
+  color: 'var(--button-text)',
+  borderColor: 'var(--button-bg)',
+};
+
+const formRowStyle = {
+  marginBottom: '1rem',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: 8,
+  fontWeight: 600,
+};
+
+const textareaStyle = {
+  display: 'block',
+  width: '100%',
+  padding: '10px 12px',
+  borderRadius: 8,
+  border: `1px solid var(--border-color)`,
+  background: 'var(--bg-primary)',
+  color: 'var(--text-primary)',
+  fontFamily: 'monospace',
+  minHeight: 180,
+};
+
+const hintStyle = {
+  marginTop: 6,
+  fontSize: 12,
+  color: 'var(--text-secondary)',
+};
+
+const preInlineStyle = {
+  background: 'var(--bg-primary)',
+  border: `1px solid var(--border-color)`,
+  padding: '0.5rem',
+  borderRadius: 8,
+  overflowX: 'auto',
+  marginTop: 6,
+};
+
+const buttonRowStyle = {
+  display: 'flex',
+  gap: '0.75rem',
+  alignItems: 'center',
+  marginTop: '0.5rem',
+};
+
+const primaryButtonStyle = {
+  backgroundColor: 'var(--button-bg)',
+  color: 'var(--button-text)',
+  border: 'none',
+  borderRadius: 8,
+  padding: '10px 16px',
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: 'pointer',
+};
+
+const secondaryButtonStyle = {
+  backgroundColor: 'transparent',
+  color: 'var(--text-primary)',
+  border: `1px solid var(--border-color)`,
+  borderRadius: 8,
+  padding: '10px 16px',
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: 'pointer',
+};
+
+const alertStyle = {
+  marginTop: '1rem',
+  padding: '0.75rem 1rem',
+  borderRadius: 8,
+  border: '1px solid transparent',
+};
+
+const successStyle = {
+  background: 'rgba(40, 167, 69, 0.1)',
+  borderColor: 'rgba(40, 167, 69, 0.3)',
+};
+
+const errorStyle = {
+  background: 'rgba(220, 53, 69, 0.1)',
+  borderColor: 'rgba(220, 53, 69, 0.3)',
+};
+
+const resultStyle = {
+  marginTop: 8,
+  lineHeight: 1.6,
+};
+
+const detailsStyle = {
+  marginTop: 6,
+};
+
+const preStyle = {
+  background: 'var(--bg-primary)',
+  border: `1px solid var(--border-color)`,
+  padding: '0.75rem',
+  borderRadius: 8,
+  overflowX: 'auto',
+};
+
+const helperBlockStyle = {
+  marginTop: 8,
+  fontSize: 13,
+  color: 'var(--text-primary)',
+};
+
+export default InferenceForm;

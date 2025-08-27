@@ -9,6 +9,7 @@ This project provides a minimal React template with a clean, modern UI and minim
 - **Fast**: Minimal dependencies for quick loading times
 - **Simple**: Easy to understand and modify
 - **AI Training**: Upload a CSV/Excel file and train a model via the backend `/ai/train` endpoint
+- **AI Inference**: Enter one or more test cases and get recommendations via the backend `/ai/infer` endpoint
 
 ## Getting Started
 
@@ -47,6 +48,14 @@ REACT_APP_API_BASE_URL=http://localhost:8000
 - Optionally provide `target_column` and `task_type` (`classification` or `regression`), otherwise the backend will infer or default.
 - Click "Start Training" to upload and start training.
 - You will see progress and a success or error message. On success, details (model_id, task_type, target_column, model_path, metrics) are displayed.
+
+## AI Inference Feature
+
+- After successfully training a model, use the "Test Your Model with Cases" section.
+- Choose Single or Batch input mode.
+- Paste a JSON object (single) or a JSON array of objects (batch) that match the feature names used for training.
+- Click "Run Inference" to receive predictions and (if classification) probabilities and classes.
+- If no model has been trained yet, the UI will display a helpful error message.
 
 ## Customization
 
