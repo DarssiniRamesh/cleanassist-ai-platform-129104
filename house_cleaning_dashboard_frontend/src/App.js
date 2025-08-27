@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import ModelTrainer from './components/ModelTrainer';
 import InferenceForm from './components/InferenceForm';
@@ -30,8 +29,6 @@ function App() {
     setTheme('dark');
   };
 
-  const apiBaseUrl = useMemo(() => process.env.REACT_APP_API_BASE_URL || '', []);
-
   return (
     <div className="App">
       <header className="App-header">
@@ -43,14 +40,9 @@ function App() {
         >
           ❤️ Black & Red
         </button>
-        <img src={logo} className="App-logo" alt="CleanAssist logo" />
-        <p className="subtitle" style={{ marginTop: 8, fontSize: 14 }}>
-          API Base: <span className="App-link">{apiBaseUrl || 'Same Origin'}</span>
-        </p>
-        <p style={{ maxWidth: 760, lineHeight: 1.55, fontSize: 14, marginTop: 12, color: 'var(--text-secondary)' }}>
-          After training, use the form below to infer a single recommended cleaning time in minutes.
-          The backend returns: {`{ "recommended_minutes": <number> }`}.
-        </p>
+
+        {/* Single, modern, application-branded title */}
+        <h1 style={{ margin: 0, fontSize: '2.2rem', letterSpacing: 0.3 }}>CleanAssist</h1>
       </header>
 
       <main style={{ paddingBottom: '3rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
