@@ -8,7 +8,8 @@ import React, { useMemo, useState } from 'react';
  * Provides feedback if no model is trained or on errors.
  */
 function InferenceForm() {
-  const apiBaseUrl = useMemo(() => process.env.REACT_APP_API_BASE_URL || '', []);
+  // Prefer REACT_APP_BASE_URL; fall back to REACT_APP_API_BASE_URL for compatibility with earlier config.
+  const apiBaseUrl = useMemo(() => process.env.REACT_APP_BASE_URL || process.env.REACT_APP_API_BASE_URL || '', []);
 
   const [inputMode, setInputMode] = useState('single'); // 'single' | 'batch'
   const [singleRecord, setSingleRecord] = useState('{}');

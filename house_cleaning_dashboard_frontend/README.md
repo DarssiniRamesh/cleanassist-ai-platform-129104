@@ -24,14 +24,27 @@ Builds the app for production to the `build` folder.
 
 ## Configuration
 
-Set the backend base URL if different from same-origin:
+Set the backend base URL if different from same-origin.
 
+Preferred variable (new):
+- REACT_APP_BASE_URL
+
+Legacy/alternate (still supported):
 - REACT_APP_API_BASE_URL
 
-Example:
+Usage notes:
+- Components read `process.env.REACT_APP_BASE_URL` for constructing API endpoints (e.g., `${REACT_APP_BASE_URL}/ai/train` and `${REACT_APP_BASE_URL}/ai/infer`).
+- If `REACT_APP_BASE_URL` is not set, components may fall back to `REACT_APP_API_BASE_URL` when available.
+- Do not include a trailing slash in the value.
+
+Example .env:
 ```
-REACT_APP_API_BASE_URL=http://localhost:8000
+REACT_APP_BASE_URL=http://localhost:8000
+# Optional fallback:
+# REACT_APP_API_BASE_URL=http://localhost:8000
 ```
+
+A starter `.env.example` file is included. Copy it to `.env` and update values for your environment.
 
 If your deployment also uses Supabase (not required for core features here), ensure:
 - REACT_APP_SUPABASE_URL
