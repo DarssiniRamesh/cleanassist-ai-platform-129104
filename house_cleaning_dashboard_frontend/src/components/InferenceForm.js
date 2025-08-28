@@ -9,7 +9,13 @@ import React, { useMemo, useState } from 'react';
  */
 function InferenceForm() {
   // Prefer REACT_APP_BASE_URL; fall back to REACT_APP_API_BASE_URL for compatibility with earlier config.
-  const apiBaseUrl = useMemo(() => process.env.REACT_APP_BASE_URL || process.env.REACT_APP_API_BASE_URL || '', []);
+  const apiBaseUrl = useMemo(() => {
+    const raw =
+      (process.env.REACT_APP_BASE_URL && process.env.REACT_APP_BASE_URL.trim()) ||
+      (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim()) ||
+      '';
+    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  }, []);
 
   const [inputMode, setInputMode] = useState('single'); // 'single' | 'batch'
   const [singleRecord, setSingleRecord] = useState('{}');
@@ -75,6 +81,10 @@ function InferenceForm() {
       setMessage('Running inference...');
       setRecommendedMinutes(null);
 
+      if (!apiBaseUrl) {
+        throw new Error('API base URL is not configured. Set REACT_APP_BASE_URL (or REACT_APP_API_BASE_URL) in your frontend .env');
+      }
+
       const response = await fetch(`${apiBaseUrl}/ai/infer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -113,7 +123,11 @@ function InferenceForm() {
     } catch (err) {
       console.error(err);
       setStatus('error');
-      setMessage('Unexpected error during inference. Please try again.');
+      // Provide actionable hints for CORS / mixed content / DNS errors
+      const hint = err?.message?.includes('API base URL is not configured')
+        ? err.message
+        : 'Failed to reach the API. Check BASE_URL, protocol (http vs https), port, and CORS settings.';
+      setMessage(hint);
       setRecommendedMinutes(null);
     }
   };
