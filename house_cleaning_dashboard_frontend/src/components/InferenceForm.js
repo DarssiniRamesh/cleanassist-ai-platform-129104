@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { getApiBaseUrl } from '../api/client';
 
 /**
  * PUBLIC_INTERFACE
@@ -9,8 +8,14 @@ import { getApiBaseUrl } from '../api/client';
  * Provides feedback if no model is trained or on errors.
  */
 function InferenceForm() {
-  // Resolve API base URL from env using a shared helper
-  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
+  // Prefer REACT_APP_BASE_URL; fall back to REACT_APP_API_BASE_URL for compatibility with earlier config.
+  const apiBaseUrl = useMemo(() => {
+    const raw =
+      (process.env.REACT_APP_BASE_URL && process.env.REACT_APP_BASE_URL.trim()) ||
+      (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim()) ||
+      '';
+    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  }, []);
 
   const [inputMode, setInputMode] = useState('single'); // 'single' | 'batch'
   const [singleRecord, setSingleRecord] = useState('{}');
@@ -77,7 +82,7 @@ function InferenceForm() {
       setRecommendedMinutes(null);
 
       if (!apiBaseUrl) {
-        throw new Error('API base URL is not configured. Set REACT_APP_BASE_URL (or REACT_APP_BACKEND_URL / REACT_APP_API_BASE_URL) in your frontend .env');
+        throw new Error('API base URL is not configured. Set REACT_APP_BASE_URL (or REACT_APP_API_BASE_URL) in your frontend .env');
       }
 
       const response = await fetch(`${apiBaseUrl}/ai/infer`, {
