@@ -21,9 +21,15 @@ function ModelTrainer() {
     const raw =
       (process.env.REACT_APP_BASE_URL && process.env.REACT_APP_BASE_URL.trim()) ||
       (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim()) ||
-      '';
+      'http://localhost:3001';
     // strip any trailing slash to avoid double slashes in fetch paths
-    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+    const base = raw.endsWith('/') ? raw.slice(0, -1) : raw;
+    if (process.env.NODE_ENV !== 'production') {
+      // Dev logging to inspect base URL configuration
+      // eslint-disable-next-line no-console
+      console.debug('[ModelTrainer] API base URL:', base);
+    }
+    return base;
   }, []);
   const [file, setFile] = useState(null);
   const [targetColumn, setTargetColumn] = useState('');
@@ -99,6 +105,14 @@ function ModelTrainer() {
       return;
     }
 
+    // Validate target column only if provided (do not block otherwise)
+    const providedTarget = targetColumn.trim();
+    if (providedTarget && /\s/.test(providedTarget)) {
+      setStatus('error');
+      setMessage('Target column must not contain spaces. Please use an exact column name as in the header.');
+      return;
+    }
+
     try {
       setStatus('uploading');
       setMessage('Uploading dataset...');
@@ -106,7 +120,7 @@ function ModelTrainer() {
 
       const formData = new FormData();
       formData.append('file', file);
-      if (targetColumn.trim()) formData.append('target_column', targetColumn.trim());
+      if (providedTarget) formData.append('target_column', providedTarget);
       if (taskType.trim()) formData.append('task_type', taskType.trim());
 
       const response = await fetch(`${apiBaseUrl}/ai/train`, { method: 'POST', body: formData });
@@ -125,12 +139,43 @@ function ModelTrainer() {
         payload = { status: response.ok ? 'success' : 'error', detail: text };
       }
 
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('[ModelTrainer] Train response:', { ok: response.ok, payload });
+      }
+
+      // Handle HTTP errors with specific messages when possible
       if (!response.ok) {
+        const specific =
+          payload?.detail ||
+          payload?.message ||
+          (Array.isArray(payload?.detail) ? payload.detail.map(d => d?.msg).join('; ') : null);
         setStatus('error');
-        setMessage(payload?.detail || payload?.message || 'Training failed. Please check your dataset and try again.');
+        setMessage(specific || 'Training failed. Please check your dataset and try again.');
         setResult(null);
         setProgress(0);
         return;
+      }
+
+      // Align with backend contract:
+      // { status, model_id, task_type, target_column, metrics, model_path }
+      const { status: trainStatus } = payload || {};
+      if (trainStatus && trainStatus.toLowerCase() !== 'success') {
+        setStatus('error');
+        setMessage(payload?.detail || payload?.message || `Training returned status: ${trainStatus}`);
+        setResult(null);
+        setProgress(0);
+        return;
+      }
+
+      // Success case: ensure presence of expected keys; if missing, still render but warn in dev
+      if (process.env.NODE_ENV !== 'production') {
+        const expectedKeys = ['status', 'model_id', 'task_type', 'target_column', 'metrics', 'model_path'];
+        const missing = expectedKeys.filter(k => !(k in (payload || {})));
+        if (missing.length) {
+          // eslint-disable-next-line no-console
+          console.warn('[ModelTrainer] Missing keys in train response:', missing);
+        }
       }
 
       setStatus('success');
@@ -138,9 +183,14 @@ function ModelTrainer() {
       setResult(payload);
       setProgress(100);
     } catch (err) {
-      console.error(err);
+      // Network/CORS/mixed content errors or unexpected issues
+      // eslint-disable-next-line no-console
+      console.error('[ModelTrainer] Training error:', err);
       setStatus('error');
-      setMessage('An unexpected error occurred while training. Please try again later.');
+      const hint = err?.message?.includes('Failed to fetch')
+        ? 'Failed to reach the API. Check BASE_URL, protocol (http vs https), port (default 3001), and CORS settings.'
+        : (err?.message || 'An unexpected error occurred while training. Please try again later.');
+      setMessage(hint);
       setResult(null);
       setProgress(0);
     }
@@ -351,11 +401,25 @@ function ModelTrainer() {
                 <div><strong>Task Type:</strong> {result.task_type || 'N/A'}</div>
                 <div><strong>Target Column:</strong> {result.target_column || 'N/A'}</div>
                 <div><strong>Artifact Path:</strong> {result.model_path || 'N/A'}</div>
+
                 {result.metrics && (
-                  <details className={styles.details}>
-                    <summary>Metrics</summary>
-                    <pre className={styles.pre}>{JSON.stringify(result.metrics, null, 2)}</pre>
-                  </details>
+                  <>
+                    <div style={{ marginTop: 8 }}>
+                      <strong>Key Metrics:</strong>
+                      <div style={{ marginTop: 4 }}>
+                        {typeof result.metrics.MAE === 'number' && (
+                          <div>MAE: {result.metrics.MAE.toFixed(4)}</div>
+                        )}
+                        {typeof result.metrics.R2 === 'number' && (
+                          <div>R2: {result.metrics.R2.toFixed(4)}</div>
+                        )}
+                      </div>
+                    </div>
+                    <details className={styles.details}>
+                      <summary>All Metrics</summary>
+                      <pre className={styles.pre}>{JSON.stringify(result.metrics, null, 2)}</pre>
+                    </details>
+                  </>
                 )}
               </div>
             )}
@@ -374,8 +438,9 @@ function ModelTrainer() {
             </div>
             <div className={styles.result}>
               • Ensure your file is a CSV or Excel (.csv, .xlsx, .xls).<br />
-              • Verify the header row and that the target column exists (if specified).<br />
-              • Try the sample CSV to validate the flow.
+              • If you filled Target column, ensure it exactly matches a column header in your dataset.<br />
+              • Omit Target column to let the backend select the last column by default.<br />
+              • Try the Sample CSV to validate the flow.
             </div>
           </div>
         )}
