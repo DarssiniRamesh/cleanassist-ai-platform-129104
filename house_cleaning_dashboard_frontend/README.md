@@ -34,36 +34,17 @@ Legacy/alternate (still supported):
 
 Usage notes:
 - Components read `process.env.REACT_APP_BASE_URL` for constructing API endpoints (e.g., `${REACT_APP_BASE_URL}/ai/train` and `${REACT_APP_BASE_URL}/ai/infer`).
-- If `REACT_APP_BASE_URL` is not set, components fall back to `REACT_APP_API_BASE_URL` when available.
-- If neither is set, the app defaults to `http://localhost:3001` (backend preview port).
+- If `REACT_APP_BASE_URL` is not set, components may fall back to `REACT_APP_API_BASE_URL` when available.
 - Do not include a trailing slash in the value.
-
-Production build env resolution (Create React App):
-- .env.production.local (highest precedence)
-- .env.production
-- .env.local
-- .env
-
-Ensure you set REACT_APP_BASE_URL in one of the above before running `npm run build`.
 
 Example .env:
 ```
-REACT_APP_BASE_URL=http://localhost:3001
+REACT_APP_BASE_URL=http://localhost:8000
 # Optional fallback:
-# REACT_APP_API_BASE_URL=http://localhost:3001
-```
-
-Example .env.production.local (user deployment):
-```
-REACT_APP_BASE_URL=https://vscode-internal-35796-beta.beta01.cloud.kavia.ai:3001
+# REACT_APP_API_BASE_URL=http://localhost:8000
 ```
 
 A starter `.env.example` file is included. Copy it to `.env` and update values for your environment.
-
-Response handling alignment:
-- Training success is detected when backend returns HTTP 200 with `status: "success"` and payload including: `model_id`, `task_type`, `target_column`, `metrics`, `model_path`.
-- On success, the UI displays key metrics like MAE and R2 when available.
-- On any error (HTTP ≥ 400), the UI parses and shows `detail` or `message` from the response when present, else shows a helpful fallback.
 
 If your deployment also uses Supabase (not required for core features here), ensure:
 - REACT_APP_SUPABASE_URL

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { getApiBaseUrl } from '../api/client';
+import React, { useMemo, useState } from 'react';
 
 /**
  * PUBLIC_INTERFACE
@@ -9,11 +8,14 @@ import { getApiBaseUrl } from '../api/client';
  * Provides feedback if no model is trained or on errors.
  */
 function InferenceForm() {
-  const apiBaseUrl = getApiBaseUrl();
-  if (process.env.NODE_ENV !== 'production') {
-    // eslint-disable-next-line no-console
-    console.debug('[InferenceForm] API base URL:', apiBaseUrl);
-  }
+  // Prefer REACT_APP_BASE_URL; fall back to REACT_APP_API_BASE_URL for compatibility with earlier config.
+  const apiBaseUrl = useMemo(() => {
+    const raw =
+      (process.env.REACT_APP_BASE_URL && process.env.REACT_APP_BASE_URL.trim()) ||
+      (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim()) ||
+      '';
+    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  }, []);
 
   const [inputMode, setInputMode] = useState('single'); // 'single' | 'batch'
   const [singleRecord, setSingleRecord] = useState('{}');
@@ -79,8 +81,11 @@ function InferenceForm() {
       setMessage('Running inference...');
       setRecommendedMinutes(null);
 
-      const url = `${apiBaseUrl}/ai/infer`;
-      const response = await fetch(url, {
+      if (!apiBaseUrl) {
+        throw new Error('API base URL is not configured. Set REACT_APP_BASE_URL (or REACT_APP_API_BASE_URL) in your frontend .env');
+      }
+
+      const response = await fetch(`${apiBaseUrl}/ai/infer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -88,26 +93,17 @@ function InferenceForm() {
 
       const contentType = response.headers.get('content-type') || '';
       let data;
-      try {
-        if (contentType.includes('application/json')) {
-          data = await response.json();
-        } else {
-          const text = await response.text();
-          data = { detail: text };
-        }
-      } catch (parseErr) {
-        data = { detail: 'Unable to parse response body.' };
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        data = { detail: text };
       }
 
       if (!response.ok) {
-        const detailArr = Array.isArray(data?.detail) ? data.detail.map(d => d?.msg).filter(Boolean) : null;
-        const detail =
-          (detailArr && detailArr.length ? detailArr.join('; ') : null) ||
-          data?.detail ||
-          data?.message ||
-          `HTTP ${response.status} ${response.statusText || ''}`.trim();
+        const detail = data?.detail || data?.message || 'Inference failed. Ensure a model is trained.';
         setStatus('error');
-        setMessage(detail || 'Inference failed. Ensure a model is trained.');
+        setMessage(detail);
         setRecommendedMinutes(null);
         return;
       }
@@ -125,12 +121,12 @@ function InferenceForm() {
       setMessage('Inference completed successfully.');
       setRecommendedMinutes(minutes);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('[InferenceForm] Inference error:', err);
+      console.error(err);
       setStatus('error');
-      const hint = err?.message?.includes('Failed to fetch')
-        ? 'Failed to reach the API. Check BASE_URL, protocol (https), correct port (3001), and CORS settings.'
-        : (err?.message || 'An unexpected error occurred while running inference.');
+      // Provide actionable hints for CORS / mixed content / DNS errors
+      const hint = err?.message?.includes('API base URL is not configured')
+        ? err.message
+        : 'Failed to reach the API. Check BASE_URL, protocol (http vs https), port, and CORS settings.';
       setMessage(hint);
       setRecommendedMinutes(null);
     }
