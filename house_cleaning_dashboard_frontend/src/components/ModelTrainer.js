@@ -1,5 +1,6 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import styles from './ModelTrainer.module.css';
+import { getApiBaseUrl } from '../api/client';
 
 /**
  * PUBLIC_INTERFACE
@@ -13,18 +14,8 @@ import styles from './ModelTrainer.module.css';
  * - Clean spacing and typography
  */
 function ModelTrainer() {
-  // Resolve API base URL with preference order:
-  // 1) REACT_APP_BASE_URL (preferred, no trailing slash)
-  // 2) REACT_APP_API_BASE_URL (legacy fallback)
-  // 3) Same-origin (empty string) - useful if frontend is reverse-proxied to backend
-  const apiBaseUrl = useMemo(() => {
-    const raw =
-      (process.env.REACT_APP_BASE_URL && process.env.REACT_APP_BASE_URL.trim()) ||
-      (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim()) ||
-      '';
-    // strip any trailing slash to avoid double slashes in fetch paths
-    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
-  }, []);
+  // Resolve API base URL using centralized helper to ensure backend host/port are used.
+  const apiBaseUrl = getApiBaseUrl();
   const [file, setFile] = useState(null);
   const [targetColumn, setTargetColumn] = useState('');
   const [taskType, setTaskType] = useState('');
@@ -109,7 +100,12 @@ function ModelTrainer() {
       if (targetColumn.trim()) formData.append('target_column', targetColumn.trim());
       if (taskType.trim()) formData.append('task_type', taskType.trim());
 
-      const response = await fetch(`${apiBaseUrl}/ai/train`, { method: 'POST', body: formData });
+      const url = `${apiBaseUrl}/ai/train`;
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.info('[ModelTrainer] Training URL:', url);
+      }
+      const response = await fetch(url, { method: 'POST', body: formData });
 
       // Simulate progress between upload and server processing
       setStatus('training');
