@@ -6,6 +6,16 @@
   * - REACT_APP_BASE_URL
   * - REACT_APP_API_BASE_URL (legacy)
   * - http://localhost:3001 (default)
+  *
+  * Production note:
+  * For create-react-app, production builds read from:
+  * - .env.production.local (highest precedence)
+  * - .env.production
+  * - .env.local
+  * - .env
+  *
+  * Ensure REACT_APP_BASE_URL is set in one of the above for production.
+  * Do not include a trailing slash.
   */
  export function getApiBaseUrl() {
    const raw =

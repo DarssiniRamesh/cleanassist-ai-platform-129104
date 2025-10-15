@@ -1,5 +1,6 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import styles from './ModelTrainer.module.css';
+import { getApiBaseUrl } from '../api/client';
 
 /**
  * PUBLIC_INTERFACE
@@ -13,24 +14,12 @@ import styles from './ModelTrainer.module.css';
  * - Clean spacing and typography
  */
 function ModelTrainer() {
-  // Resolve API base URL with preference order:
-  // 1) REACT_APP_BASE_URL (preferred, no trailing slash)
-  // 2) REACT_APP_API_BASE_URL (legacy fallback)
-  // 3) Same-origin (empty string) - useful if frontend is reverse-proxied to backend
-  const apiBaseUrl = useMemo(() => {
-    const raw =
-      (process.env.REACT_APP_BASE_URL && process.env.REACT_APP_BASE_URL.trim()) ||
-      (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim()) ||
-      'http://localhost:3001';
-    // strip any trailing slash to avoid double slashes in fetch paths
-    const base = raw.endsWith('/') ? raw.slice(0, -1) : raw;
-    if (process.env.NODE_ENV !== 'production') {
-      // Dev logging to inspect base URL configuration
-      // eslint-disable-next-line no-console
-      console.debug('[ModelTrainer] API base URL:', base);
-    }
-    return base;
-  }, []);
+  // Use centralized API base URL helper
+  const apiBaseUrl = getApiBaseUrl();
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.debug('[ModelTrainer] API base URL:', apiBaseUrl);
+  }
   const [file, setFile] = useState(null);
   const [targetColumn, setTargetColumn] = useState('');
   const [taskType, setTaskType] = useState('');
@@ -123,7 +112,8 @@ function ModelTrainer() {
       if (providedTarget) formData.append('target_column', providedTarget);
       if (taskType.trim()) formData.append('task_type', taskType.trim());
 
-      const response = await fetch(`${apiBaseUrl}/ai/train`, { method: 'POST', body: formData });
+      const url = `${apiBaseUrl}/ai/train`;
+      const response = await fetch(url, { method: 'POST', body: formData });
 
       // Simulate progress between upload and server processing
       setStatus('training');
@@ -132,24 +122,31 @@ function ModelTrainer() {
 
       const contentType = response.headers.get('content-type') || '';
       let payload;
-      if (contentType.includes('application/json')) {
-        payload = await response.json();
-      } else {
-        const text = await response.text();
-        payload = { status: response.ok ? 'success' : 'error', detail: text };
+      try {
+        if (contentType.includes('application/json')) {
+          payload = await response.json();
+        } else {
+          const text = await response.text();
+          payload = { status: response.ok ? 'success' : 'error', detail: text };
+        }
+      } catch (parseErr) {
+        // Fallback if body is unreadable
+        payload = { status: response.ok ? 'success' : 'error', detail: 'Unable to parse response body.' };
       }
 
       if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
-        console.debug('[ModelTrainer] Train response:', { ok: response.ok, payload });
+        console.debug('[ModelTrainer] Train response:', { ok: response.ok, status: response.status, payload });
       }
 
       // Handle HTTP errors with specific messages when possible
       if (!response.ok) {
+        const detailArr = Array.isArray(payload?.detail) ? payload.detail.map(d => d?.msg).filter(Boolean) : null;
         const specific =
+          (detailArr && detailArr.length ? detailArr.join('; ') : null) ||
           payload?.detail ||
           payload?.message ||
-          (Array.isArray(payload?.detail) ? payload.detail.map(d => d?.msg).join('; ') : null);
+          `HTTP ${response.status} ${response.statusText || ''}`.trim();
         setStatus('error');
         setMessage(specific || 'Training failed. Please check your dataset and try again.');
         setResult(null);
@@ -159,10 +156,10 @@ function ModelTrainer() {
 
       // Align with backend contract:
       // { status, model_id, task_type, target_column, metrics, model_path }
-      const { status: trainStatus } = payload || {};
-      if (trainStatus && trainStatus.toLowerCase() !== 'success') {
+      const trainStatus = (payload?.status || '').toString().toLowerCase();
+      if (trainStatus && trainStatus !== 'success') {
         setStatus('error');
-        setMessage(payload?.detail || payload?.message || `Training returned status: ${trainStatus}`);
+        setMessage(payload?.detail || payload?.message || `Training returned status: ${payload?.status}`);
         setResult(null);
         setProgress(0);
         return;
@@ -188,7 +185,7 @@ function ModelTrainer() {
       console.error('[ModelTrainer] Training error:', err);
       setStatus('error');
       const hint = err?.message?.includes('Failed to fetch')
-        ? 'Failed to reach the API. Check BASE_URL, protocol (http vs https), port (default 3001), and CORS settings.'
+        ? 'Failed to reach the API. Check BASE_URL, protocol (https), correct port (3001), and CORS settings.'
         : (err?.message || 'An unexpected error occurred while training. Please try again later.');
       setMessage(hint);
       setResult(null);
@@ -412,6 +409,12 @@ function ModelTrainer() {
                         )}
                         {typeof result.metrics.R2 === 'number' && (
                           <div>R2: {result.metrics.R2.toFixed(4)}</div>
+                        )}
+                        {typeof result.metrics.n_features === 'number' && (
+                          <div>n_features: {result.metrics.n_features}</div>
+                        )}
+                        {typeof result.metrics.n_samples === 'number' && (
+                          <div>n_samples: {result.metrics.n_samples}</div>
                         )}
                       </div>
                     </div>

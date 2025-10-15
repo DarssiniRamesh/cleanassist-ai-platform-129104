@@ -38,11 +38,24 @@ Usage notes:
 - If neither is set, the app defaults to `http://localhost:3001` (backend preview port).
 - Do not include a trailing slash in the value.
 
+Production build env resolution (Create React App):
+- .env.production.local (highest precedence)
+- .env.production
+- .env.local
+- .env
+
+Ensure you set REACT_APP_BASE_URL in one of the above before running `npm run build`.
+
 Example .env:
 ```
 REACT_APP_BASE_URL=http://localhost:3001
 # Optional fallback:
 # REACT_APP_API_BASE_URL=http://localhost:3001
+```
+
+Example .env.production.local (user deployment):
+```
+REACT_APP_BASE_URL=https://vscode-internal-35796-beta.beta01.cloud.kavia.ai:3001
 ```
 
 A starter `.env.example` file is included. Copy it to `.env` and update values for your environment.
